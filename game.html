@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeQuest: Your Fun Coding Adventure!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .code-area {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .planet { transition: all 0.5s; filter: grayscale(100%); }
+        .planet.visited { filter: grayscale(0%); transform: scale(1.1); }
+        #dragon { transition: all 1s; }
+    </style>
+</head>
+<body class="gradient-bg text-white">
+
+    <!-- Language Selection -->
+    <div class="absolute top-4 right-4 z-10">
+        <select id="language-selector" class="bg-white/20 border border-white/30 rounded-md px-3 py-1 text-white">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="hi">हिन्दी</option>
+            <option value="de">Deutsch</option>
+        </select>
+    </div>
+
+    <div id="main-content" class="container mx-auto px-4 py-8">
+        <!-- Landing Page -->
+        <section id="landing-page" class="text-center py-20">
+            <h1 class="text-5xl md:text-7xl font-bold mb-4" data-key="title">CodeQuest</h1>
+            <p class="text-xl md:text-2xl mb-8" data-key="subtitle">Your Fun Coding Adventure!</p>
+            <p class="max-w-3xl mx-auto mb-12" data-key="description">Unlock the magic of coding through fun games and interactive challenges. Perfect for all ages and skill levels. Start your quest today!</p>
+            <button id="start-demo-btn" class="bg-yellow-400 text-gray-900 font-bold py-3 px-8 rounded-full text-lg hover:bg-yellow-300 transition-transform transform hover:scale-105" data-key="start_demo">Start the Demo</button>
+        </section>
+
+        <!-- Demo Section -->
+        <section id="demo-section" class="hidden glassmorphism p-8 my-16">
+            <h2 class="text-3xl font-bold text-center mb-8" data-key="demo_title">Quick Demo: See the Magic!</h2>
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="md:w-1/2">
+                    <h3 class="text-2xl font-semibold mb-4" data-key="demo_instructions_title">Instructions</h3>
+                    <p class="mb-4" data-key="demo_instructions">Type the code in the box to the right to change the color of the circle. Try typing `blue`, `green`, or `red`!</p>
+                    <div class="code-area">
+                        <pre>&gt; <span id="demo-code-input" contenteditable="true" class="outline-none"></span></pre>
+                    </div>
+                     <button id="run-demo-code-btn" class="mt-4 bg-green-500 text-white font-bold py-2 px-6 rounded-full hover:bg-green-400" data-key="run_code">Run Code</button>
+                </div>
+                <div class="md:w-1/2 flex flex-col items-center justify-center">
+                    <div id="demo-output-circle" class="w-48 h-48 bg-yellow-400 rounded-full transition-colors duration-500"></div>
+                </div>
+            </div>
+            <div class="text-center mt-8">
+                <button id="start-levels-btn" class="bg-purple-600 text-white font-bold py-3 px-8 rounded-full text-lg hover:bg-purple-500" data-key="start_levels">Start the Real Quest!</button>
+            </div>
+        </section>
+
+        <!-- Level Selection -->
+        <section id="level-selection" class="hidden text-center py-16">
+            <h2 class="text-4xl font-bold mb-12" data-key="levels_title">Choose Your Challenge</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glassmorphism p-8 hover:bg-white/20 cursor-pointer level-card" data-level="1">
+                    <h3 class="text-2xl font-bold mb-4" data-key="level_1_title">Level 1: Maze Runner</h3>
+                    <p data-key="level_1_desc">Guide the puppy through the maze to its home using directional commands.</p>
+                </div>
+                <div class="glassmorphism p-8 hover:bg-white/20 cursor-pointer level-card" data-level="2">
+                    <h3 class="text-2xl font-bold mb-4" data-key="level_2_title">Level 2: Planet Hopper</h3>
+                    <p data-key="level_2_desc">Use arrays and loops to visit a series of planets and collect fuel.</p>
+                </div>
+                <div class="glassmorphism p-8 hover:bg-white/20 cursor-pointer level-card" data-level="3">
+                    <h3 class="text-2xl font-bold mb-4" data-key="level_3_title">Level 3: Dragon Defense</h3>
+                    <p data-key="level_3_desc">Use functions with parameters and conditionals to defend your castle from a dragon.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Section -->
+        <section id="game-section" class="hidden glassmorphism p-8 my-16">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Game Display -->
+                <div class="lg:w-1/2">
+                    <h3 id="game-title" class="text-2xl font-semibold mb-4 text-center"></h3>
+                    <div id="game-canvas-container" class="bg-white/10 rounded-lg aspect-square p-4">
+                         <div id="game-canvas" class="relative w-full h-full bg-blue-900/20">
+                            <!-- Level 1 Elements -->
+                            <div id="maze-container" class="absolute w-full h-full"></div>
+                            <div id="puppy" class="absolute w-1/10 h-1/10 text-2xl md:text-4xl z-10" style="transition: all 0.4s;">🐶</div>
+                            <div id="home" class="absolute w-1/10 h-1/10 text-2xl md:text-4xl">🏡</div>
+                            <!-- Level 2 Elements -->
+                            <div id="spaceship" class="absolute w-12 h-12 text-4xl hidden" style="transition: all 1s;">🚀</div>
+                            <div id="planets-container" class="absolute w-full h-full"></div>
+                            <!-- Level 3 Elements -->
+                            <div id="castle-ground" class="absolute bottom-0 w-full h-1/4 bg-green-800/50 hidden"></div>
+                            <div id="castle-container" class="absolute bottom-1/4 w-full h-3/4 flex justify-center items-end"></div>
+                            <div id="dragon" class="absolute text-6xl hidden" style="top: 10%; right: -50%;">🐉</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Coding Area & Instructions -->
+                <div class="lg:w-1/2">
+                    <h3 class="text-2xl font-semibold mb-4" data-key="instructions">Instructions</h3>
+                    <p id="game-instructions" class="mb-4"></p>
+                    <div class="code-area h-64 overflow-y-auto">
+                        <textarea id="code-input" class="w-full h-full bg-transparent text-white border-none outline-none resize-none"></textarea>
+                    </div>
+                    <div class="flex items-center justify-between mt-4">
+                        <button id="run-code-btn" class="bg-green-500 text-white font-bold py-2 px-6 rounded-full hover:bg-green-400" data-key="run_code">Run Code</button>
+                        <button id="hint-btn" class="bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-400" data-key="get_hint">Get a Hint</button>
+                    </div>
+                    <div id="hint-box" class="mt-4 p-4 bg-yellow-400/20 rounded-lg hidden">
+                        <p id="hint-text" class="text-yellow-200"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-8">
+                 <button id="back-to-levels-btn" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-full" data-key="back_to_levels">Back to Levels</button>
+            </div>
+        </section>
+        
+        <!-- Certificate Section -->
+        <section id="certificate-section" class="hidden text-center py-20">
+             <div class="glassmorphism p-8 max-w-3xl mx-auto">
+                <h2 class="text-4xl font-bold mb-4" data-key="congrats">Congratulations!</h2>
+                <p class="text-xl mb-8" data-key="level_complete">You've completed the level!</p>
+                <div id="certificate-content" class="bg-white text-gray-800 p-8 rounded-lg shadow-lg text-center">
+                    <h3 class="text-3xl font-bold text-purple-600">Certificate of Completion</h3>
+                    <p class="my-4">This certifies that</p>
+                    <p id="user-name" class="text-2xl font-semibold border-b-2 border-gray-400 pb-2">[Your Name Here]</p>
+                    <p class="my-4">has successfully completed</p>
+                    <p id="completed-level-name" class="text-xl font-semibold"></p>
+                    <p class="mt-8 text-sm text-gray-500">Issued by CodeQuest</p>
+                </div>
+                <div class="mt-8">
+                    <input type="text" id="name-input" placeholder="Enter your name for the certificate" class="bg-white/20 border border-white/30 rounded-md px-3 py-2 text-white w-full max-w-sm mb-4" data-key="enter_name_placeholder">
+                    <button id="download-cert-btn" class="bg-green-500 text-white font-bold py-3 px-8 rounded-full text-lg hover:bg-green-400" data-key="download_cert">Download Certificate</button>
+                </div>
+             </div>
+        </section>
+
+    </div>
+
+    <script>
+        const translations = {
+            en: {
+                title: "CodeQuest",
+                subtitle: "Your Fun Coding Adventure!",
+                description: "Unlock the magic of coding through fun games and interactive challenges. Perfect for all ages and skill levels. Start your quest today!",
+                start_demo: "Start the Demo",
+                demo_title: "Quick Demo: See the Magic!",
+                demo_instructions_title: "Instructions",
+                demo_instructions: "Type the code in the box to the right to change the color of the circle. Try typing `blue`, `green`, or `red`!",
+                run_code: "Run Code",
+                start_levels: "Start the Real Quest!",
+                levels_title: "Choose Your Challenge",
+                level_1_title: "Level 1: Maze Runner",
+                level_1_desc: "Guide the puppy through the maze to its home using directional commands.",
+                level_2_title: "Level 2: Planet Hopper",
+                level_2_desc: "Use arrays and loops to visit a series of planets and collect fuel.",
+                level_3_title: "Level 3: Dragon Defense",
+                level_3_desc: "Use functions with parameters and conditionals to defend your castle from a dragon.",
+                instructions: "Instructions",
+                get_hint: "Get a Hint",
+                back_to_levels: "Back to Levels",
+                congrats: "Congratulations!",
+                level_complete: "You've completed the level!",
+                enter_name_placeholder: "Enter your name for the certificate",
+                download_cert: "Download Certificate",
+                game_1_instructions: "Guide the puppy home! Use `moveRight()`, `moveDown()`, `moveLeft()`, and `moveUp()` to navigate the maze.",
+                game_1_hint: "The path is: Right, Right, Down, Down, Right, Right. Write the commands in order.",
+                game_2_instructions: "Visit all planets to collect fuel. The planet coordinates are in the `planets` array. Use a `for` loop and `flyTo(x, y)`.",
+                game_2_hint: "Loop through the array like this: for (const planet of planets) { flyTo(planet[0], planet[1]); }",
+                game_3_instructions: "A dragon is near! If `dragonIsNear` is true, you must build a wall of size 5 or more. Use `build('wall', size)`.",
+                game_3_hint: "Use an if statement: if (dragonIsNear) { build('wall', 5); } else { build('tower', 2); }",
+            },
+            de: {
+                title: "CodeQuest",
+                subtitle: "Dein lustiges Programmier-Abenteuer!",
+                description: "Entfessle die Magie des Programmierens durch lustige Spiele und interaktive Herausforderungen. Perfekt für alle Altersgruppen und Fähigkeitsstufen. Starte noch heute deine Quest!",
+                start_demo: "Demo starten",
+                demo_title: "Schnelldemo: Sieh die Magie!",
+                demo_instructions_title: "Anweisungen",
+                demo_instructions: "Gib den Code in das Feld rechts ein, um die Farbe des Kreises zu ändern. Versuche `blue`, `green` oder `red` einzugeben!",
+                run_code: "Code ausführen",
+                start_levels: "Starte die echte Quest!",
+                levels_title: "Wähle deine Herausforderung",
+                level_1_title: "Level 1: Labyrinthläufer",
+                level_1_desc: "Führe den Welpen mit Richtungsbefehlen durch das Labyrinth nach Hause.",
+                level_2_title: "Level 2: Planetenhüpfer",
+                level_2_desc: "Verwende Arrays und Schleifen, um eine Reihe von Planeten zu besuchen und Treibstoff zu sammeln.",
+                level_3_title: "Level 3: Drachenverteidigung",
+                level_3_desc: "Verwende Funktionen mit Parametern und Bedingungen, um deine Burg vor einem Drachen zu verteidigen.",
+                instructions: "Anweisungen",
+                get_hint: "Hinweis erhalten",
+                back_to_levels: "Zurück zu den Levels",
+                congrats: "Herzlichen Glückwunsch!",
+                level_complete: "Du hast das Level abgeschlossen!",
+                enter_name_placeholder: "Gib deinen Namen für das Zertifikat ein",
+                download_cert: "Zertifikat herunterladen",
+                game_1_instructions: "Führe den Welpen nach Hause! Benutze `moveRight()`, `moveDown()`, `moveLeft()` und `moveUp()`, um durch das Labyrinth zu navigieren.",
+                game_1_hint: "Der Weg ist: Rechts, Rechts, Runter, Runter, Rechts, Rechts. Schreibe die Befehle in der richtigen Reihenfolge.",
+                game_2_instructions: "Besuche alle Planeten, um Treibstoff zu sammeln. Die Planetenkoordinaten befinden sich im `planets`-Array. Benutze eine `for`-Schleife und `flyTo(x, y)`.",
+                game_2_hint: "Durchlaufe das Array so: for (const planet of planets) { flyTo(planet[0], planet[1]); }",
+                game_3_instructions: "Ein Drache ist in der Nähe! Wenn `dragonIsNear` wahr ist, musst du eine Mauer der Größe 5 oder mehr bauen. Benutze `build('wall', size)`.",
+                game_3_hint: "Benutze eine if-Anweisung: if (dragonIsNear) { build('wall', 5); } else { build('tower', 2); }",
+            }
+        };
+
+        const languageSelector = document.getElementById('language-selector');
+        const allTextElements = document.querySelectorAll('[data-key]');
+
+        function changeLanguage(lang) {
+            allTextElements.forEach(element => {
+                const key = element.getAttribute('data-key');
+                if (translations[lang] && translations[lang][key]) {
+                    element.innerText = translations[lang][key];
+                }
+            });
+            const nameInput = document.getElementById('name-input');
+            if (nameInput && translations[lang] && translations[lang]['enter_name_placeholder']) {
+                nameInput.placeholder = translations[lang]['enter_name_placeholder'];
+            }
+        }
+
+        languageSelector.addEventListener('change', (e) => changeLanguage(e.target.value));
+        changeLanguage('en');
+
+        const landingPage = document.getElementById('landing-page');
+        const demoSection = document.getElementById('demo-section');
+        const levelSelection = document.getElementById('level-selection');
+        const gameSection = document.getElementById('game-section');
+        const certificateSection = document.getElementById('certificate-section');
+        
+        const startDemoBtn = document.getElementById('start-demo-btn');
+        const startLevelsBtn = document.getElementById('start-levels-btn');
+        const backToLevelsBtn = document.getElementById('back-to-levels-btn');
+        const levelCards = document.querySelectorAll('.level-card');
+
+        function showSection(section) {
+            [landingPage, demoSection, levelSelection, gameSection, certificateSection].forEach(s => s.classList.add('hidden'));
+            section.classList.remove('hidden');
+        }
+
+        startDemoBtn.addEventListener('click', () => showSection(demoSection));
+        startLevelsBtn.addEventListener('click', () => showSection(levelSelection));
+        backToLevelsBtn.addEventListener('click', () => showSection(levelSelection));
+
+        const demoCodeInput = document.getElementById('demo-code-input');
+        const runDemoCodeBtn = document.getElementById('run-demo-code-btn');
+        const demoOutputCircle = document.getElementById('demo-output-circle');
+
+        runDemoCodeBtn.addEventListener('click', () => {
+            const code = demoCodeInput.innerText.trim().toLowerCase();
+            demoOutputCircle.style.backgroundColor = ['red', 'green', 'blue'].includes(code) ? code : 'yellow';
+        });
+        
+        // Game Logic
+        const gameTitle = document.getElementById('game-title');
+        const gameInstructions = document.getElementById('game-instructions');
+        const codeInput = document.getElementById('code-input');
+        const runCodeBtn = document.getElementById('run-code-btn');
+        const hintBtn = document.getElementById('hint-btn');
+        const hintBox = document.getElementById('hint-box');
+        const hintText = document.getElementById('hint-text');
+        
+        const puppy = document.getElementById('puppy');
+        const home = document.getElementById('home');
+        const mazeContainer = document.getElementById('maze-container');
+        const spaceship = document.getElementById('spaceship');
+        const planetsContainer = document.getElementById('planets-container');
+        const castleGround = document.getElementById('castle-ground');
+        const castleContainer = document.getElementById('castle-container');
+        const dragon = document.getElementById('dragon');
+
+        let currentLevel = 1;
+        const GRID_SIZE = 5;
+        let puppyPos = { x: 0, y: 0 };
+        let planetsToVisit = [];
+        let visitedPlanets = 0;
+        let wallSize = 0;
+
+        function hideAllGameElements() {
+            [puppy, home, mazeContainer, spaceship, planetsContainer, castleGround, castleContainer, dragon].forEach(el => el.classList.add('hidden'));
+            [mazeContainer, planetsContainer, castleContainer].forEach(c => c.innerHTML = '');
+        }
+
+        function setupLevel(level) {
+            currentLevel = level;
+            showSection(gameSection);
+            hintBox.classList.add('hidden');
+            hideAllGameElements();
+            const lang = languageSelector.value;
+            codeInput.value = '';
+
+            if (level === 1) {
+                gameTitle.innerText = translations[lang].level_1_title;
+                gameInstructions.innerText = translations[lang].game_1_instructions;
+                hintText.innerText = translations[lang].game_1_hint;
+                [puppy, home, mazeContainer].forEach(el => el.classList.remove('hidden'));
+                resetLevel1();
+            } else if (level === 2) {
+                gameTitle.innerText = translations[lang].level_2_title;
+                gameInstructions.innerText = translations[lang].game_2_instructions;
+                hintText.innerText = translations[lang].game_2_hint;
+                [spaceship, planetsContainer].forEach(el => el.classList.remove('hidden'));
+                resetLevel2();
+            } else if (level === 3) {
+                gameTitle.innerText = translations[lang].level_3_instructions;
+                hintText.innerText = translations[lang].game_3_hint;
+                [castleGround, castleContainer, dragon].forEach(el => el.classList.remove('hidden'));
+                resetLevel3();
+            }
+        }
+        
+        function resetLevel1() {
+            puppyPos = { x: 0, y: 0 };
+            const mazeLayout = [
+                [0, 0, 1, 0, 0],
+                [1, 0, 1, 0, 1],
+                [1, 0, 0, 0, 1],
+                [1, 1, 1, 0, 1],
+                [0, 0, 0, 0, 0],
+            ];
+            mazeContainer.innerHTML = '';
+            mazeContainer.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+            for(let y = 0; y < GRID_SIZE; y++) {
+                for(let x = 0; x < GRID_SIZE; x++) {
+                    const cell = document.createElement('div');
+                    cell.style.width = `${100/GRID_SIZE}%`;
+                    cell.style.height = `${100/GRID_SIZE}%`;
+                    cell.style.position = 'absolute';
+                    cell.style.left = `${x * (100/GRID_SIZE)}%`;
+                    cell.style.top = `${y * (100/GRID_SIZE)}%`;
+                    if (mazeLayout[y][x] === 1) {
+                        cell.style.backgroundColor = 'rgba(0,0,50,0.5)';
+                        cell.classList.add('wall');
+                    }
+                    mazeContainer.appendChild(cell);
+                }
+            }
+            puppy.style.left = `${puppyPos.x * (100/GRID_SIZE)}%`;
+            puppy.style.top = `${puppyPos.y * (100/GRID_SIZE)}%`;
+            home.style.left = `${(GRID_SIZE - 1) * (100/GRID_SIZE)}%`;
+            home.style.top = `${(GRID_SIZE - 1) * (100/GRID_SIZE)}%`;
+        }
+
+        function resetLevel2() {
+            visitedPlanets = 0;
+            spaceship.style.left = 'calc(50% - 24px)';
+            spaceship.style.top = 'calc(90% - 24px)';
+            planetsContainer.innerHTML = '';
+            planetsToVisit = [[20, 20], [80, 40], [50, 60]];
+            planetsToVisit.forEach(([x,y], i) => {
+                const planet = document.createElement('div');
+                planet.className = 'planet absolute text-5xl';
+                planet.innerHTML = ['🪐', '🌕', '✨'][i];
+                planet.style.left = `calc(${x}% - 30px)`;
+                planet.style.top = `calc(${y}% - 30px)`;
+                planetsContainer.appendChild(planet);
+            });
+        }
+
+        function resetLevel3() {
+            wallSize = 0;
+            castleContainer.innerHTML = '';
+            dragon.style.right = '-50%';
+        }
+        
+        levelCards.forEach(card => card.addEventListener('click', () => setupLevel(parseInt(card.dataset.level))));
+
+        hintBtn.addEventListener('click', () => hintBox.classList.toggle('hidden'));
+        runCodeBtn.addEventListener('click', () => executeCode(codeInput.value));
+
+        async function executeCode(code) {
+            const moveRight = async () => await movePuppy(1, 0);
+            const moveLeft = async () => await movePuppy(-1, 0);
+            const moveDown = async () => await movePuppy(0, 1);
+            const moveUp = async () => await movePuppy(0, -1);
+            
+            const planets = planetsToVisit;
+            const flyTo = async (x, y) => await flySpaceship(x, y);
+
+            const dragonIsNear = Math.random() > 0.5;
+            if(dragonIsNear) dragon.style.right = '10%';
+            const build = (part, size) => buildCastlePart(part, size);
+
+            if (currentLevel === 1) resetLevel1();
+            if (currentLevel === 2) resetLevel2();
+            if (currentLevel === 3) resetLevel3();
+
+            try {
+                const asyncFunction = new Function('moveRight', 'moveLeft', 'moveDown', 'moveUp', 'planets', 'flyTo', 'dragonIsNear', 'build', `return (async () => { ${code} })()`);
+                await asyncFunction(moveRight, moveLeft, moveDown, moveUp, planets, flyTo, dragonIsNear, build);
+            } catch (e) {
+                console.error("Execution error:", e);
+                alert("Oops! There's an error in your code. Check the console for details.");
+            } finally {
+                checkWinCondition();
+            }
+        }
+        
+        function movePuppy(dx, dy) {
+            return new Promise(resolve => {
+                const newX = puppyPos.x + dx;
+                const newY = puppyPos.y + dy;
+                // Basic boundary and wall check
+                if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE) {
+                     const targetCell = mazeContainer.children[newY * GRID_SIZE + newX];
+                     if(!targetCell.classList.contains('wall')) {
+                        puppyPos.x = newX;
+                        puppyPos.y = newY;
+                     }
+                }
+                puppy.style.left = `${puppyPos.x * (100/GRID_SIZE)}%`;
+                puppy.style.top = `${puppyPos.y * (100/GRID_SIZE)}%`;
+                setTimeout(resolve, 400);
+            });
+        }
+
+        async function flySpaceship(x, y) {
+            spaceship.style.left = `calc(${x}% - 24px)`;
+            spaceship.style.top = `calc(${y}% - 24px)`;
+            await new Promise(r => setTimeout(r, 1000));
+            
+            const planets = planetsContainer.querySelectorAll('.planet');
+            planets.forEach((planet, index) => {
+                const [px, py] = planetsToVisit[index];
+                if (Math.abs(px - x) < 5 && Math.abs(py - y) < 5 && !planet.classList.contains('visited')) {
+                    planet.classList.add('visited');
+                    visitedPlanets++;
+                }
+            });
+        }
+
+        function buildCastlePart(part, size = 1) {
+            const element = document.createElement('div');
+            element.className = 'inline-block mx-1 text-center';
+            const icon = part === 'tower' ? '♖' : '🧱';
+            element.innerHTML = Array(size).fill(icon).join('<br>');
+            element.style.fontSize = '3rem';
+            element.style.lineHeight = '1';
+            castleContainer.appendChild(element);
+            if(part === 'wall') wallSize += size;
+        }
+        
+        function checkWinCondition() {
+            if (currentLevel === 1 && puppyPos.x === GRID_SIZE - 1 && puppyPos.y === GRID_SIZE - 1) showCertificate(1);
+            if (currentLevel === 2 && visitedPlanets === planetsToVisit.length) showCertificate(2);
+            if (currentLevel === 3) {
+                 const dragonIsNear = dragon.style.right === '10%';
+                 if (dragonIsNear && wallSize >= 5) {
+                     showCertificate(3);
+                 } else if (!dragonIsNear && castleContainer.children.length > 0) {
+                     showCertificate(3);
+                 }
+            }
+        }
+        
+        // Certificate Logic
+        const nameInput = document.getElementById('name-input');
+        const userName = document.getElementById('user-name');
+        const downloadCertBtn = document.getElementById('download-cert-btn');
+        const completedLevelName = document.getElementById('completed-level-name');
+        const certificateContent = document.getElementById('certificate-content');
+
+        nameInput.addEventListener('input', (e) => {
+            userName.innerText = e.target.value || "[Your Name Here]";
+        });
+        
+        function showCertificate(level) {
+            showSection(certificateSection);
+            const lang = languageSelector.value;
+            const levelKey = `level_${level}_title`;
+            completedLevelName.innerText = translations[lang][levelKey] || `Level ${level}`;
+        }
+        
+        downloadCertBtn.addEventListener('click', () => {
+            html2canvas(certificateContent).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'CodeQuest-Certificate.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        });
+    </script>
+</body>
+</html>
