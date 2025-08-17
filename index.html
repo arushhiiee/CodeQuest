@@ -6,6 +6,7 @@
     <title>CodeQuest: Your Fun Coding Adventure!</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -29,7 +30,31 @@
         }
         .planet { transition: all 0.5s; filter: grayscale(100%); }
         .planet.visited { filter: grayscale(0%); transform: scale(1.1); }
-        #dragon { transition: all 1s; }
+        .puppy-hop { animation: hop 0.4s ease-in-out; }
+        @keyframes hop {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .item-appear { animation: appear 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+        @keyframes appear {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+        @keyframes confetti-fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+        .error-popup {
+            transition: opacity 0.3s, transform 0.3s;
+        }
     </style>
 </head>
 <body class="gradient-bg text-white">
@@ -51,7 +76,7 @@
             <h1 class="text-5xl md:text-7xl font-bold mb-4" data-key="title">CodeQuest</h1>
             <p class="text-xl md:text-2xl mb-8" data-key="subtitle">Your Fun Coding Adventure!</p>
             <p class="max-w-3xl mx-auto mb-12" data-key="description">Unlock the magic of coding through fun games and interactive challenges. Perfect for all ages and skill levels. Start your quest today!</p>
-            <button id="start-demo-btn" class="bg-yellow-400 text-gray-900 font-bold py-3 px-8 rounded-full text-lg hover:bg-yellow-300 transition-transform transform hover:scale-105" data-key="start_demo">Start the Demo</button>
+            <button id="start-demo-btn" class="bg-yellow-400 text-gray-900 font-bold py-3 px-8 rounded-full text-lg hover:bg-yellow-300 transition-transform transform hover:scale-105" data-key="start_learning">Start Your Learning</button>
         </section>
 
         <!-- Demo Section -->
@@ -88,31 +113,34 @@
                     <p data-key="level_2_desc">Use arrays and loops to visit a series of planets and collect fuel.</p>
                 </div>
                 <div class="glassmorphism p-8 hover:bg-white/20 cursor-pointer level-card" data-level="3">
-                    <h3 class="text-2xl font-bold mb-4" data-key="level_3_title">Level 3: Dragon Defense</h3>
-                    <p data-key="level_3_desc">Use functions with parameters and conditionals to defend your castle from a dragon.</p>
+                    <h3 class="text-2xl font-bold mb-4" data-key="level_3_title">Level 3: Function Forge</h3>
+                    <p data-key="level_3_desc">Forge items by calling functions with parameters and add the returned items to your inventory.</p>
                 </div>
             </div>
         </section>
 
         <!-- Game Section -->
-        <section id="game-section" class="hidden glassmorphism p-8 my-16">
+        <section id="game-section" class="hidden glassmorphism p-8 my-16 relative">
             <div class="flex flex-col lg:flex-row gap-8">
                 <!-- Game Display -->
                 <div class="lg:w-1/2">
                     <h3 id="game-title" class="text-2xl font-semibold mb-4 text-center"></h3>
-                    <div id="game-canvas-container" class="bg-white/10 rounded-lg aspect-square p-4">
+                    <div id="game-canvas-container" class="bg-white/10 rounded-lg aspect-square p-4 overflow-hidden">
                          <div id="game-canvas" class="relative w-full h-full bg-blue-900/20">
                             <!-- Level 1 Elements -->
                             <div id="maze-container" class="absolute w-full h-full"></div>
-                            <div id="puppy" class="absolute w-1/10 h-1/10 text-2xl md:text-4xl z-10" style="transition: all 0.4s;">🐶</div>
-                            <div id="home" class="absolute w-1/10 h-1/10 text-2xl md:text-4xl">🏡</div>
+                            <div id="puppy" class="absolute text-2xl md:text-4xl z-10 flex items-center justify-center" style="transition: all 0.4s ease-in-out;">🐶</div>
+                            <div id="home" class="absolute text-2xl md:text-4xl flex items-center justify-center">🏡</div>
                             <!-- Level 2 Elements -->
-                            <div id="spaceship" class="absolute w-12 h-12 text-4xl hidden" style="transition: all 1s;">🚀</div>
+                            <div id="spaceship" class="absolute w-12 h-12 text-4xl hidden" style="transition: all 1s cubic-bezier(0.65, 0, 0.35, 1);">🚀</div>
                             <div id="planets-container" class="absolute w-full h-full"></div>
                             <!-- Level 3 Elements -->
-                            <div id="castle-ground" class="absolute bottom-0 w-full h-1/4 bg-green-800/50 hidden"></div>
-                            <div id="castle-container" class="absolute bottom-1/4 w-full h-3/4 flex justify-center items-end"></div>
-                            <div id="dragon" class="absolute text-6xl hidden" style="top: 10%; right: -50%;">🐉</div>
+                            <div id="forge-area" class="w-full h-full flex flex-col items-center justify-center hidden">
+                                <div class="text-8xl mb-8">🛠️</div>
+                                <div id="inventory" class="w-full h-1/4 bg-black/20 rounded-lg p-4 flex items-center justify-center gap-4">
+                                    <p class="text-gray-400" data-key="inventory_empty">Inventory is empty</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -124,7 +152,7 @@
                         <textarea id="code-input" class="w-full h-full bg-transparent text-white border-none outline-none resize-none"></textarea>
                     </div>
                     <div class="flex items-center justify-between mt-4">
-                        <button id="run-code-btn" class="bg-green-500 text-white font-bold py-2 px-6 rounded-full hover:bg-green-400" data-key="run_code">Run Code</button>
+                        <button id="run-code-btn" class="bg-green-500 text-white font-bold py-2 px-6 rounded-full hover:bg-green-400 disabled:bg-gray-500" data-key="run_code">Run Code</button>
                         <button id="hint-btn" class="bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-400" data-key="get_hint">Get a Hint</button>
                     </div>
                     <div id="hint-box" class="mt-4 p-4 bg-yellow-400/20 rounded-lg hidden">
@@ -133,7 +161,11 @@
                 </div>
             </div>
             <div class="text-center mt-8">
-                 <button id="back-to-levels-btn" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-full" data-key="back_to_levels">Back to Levels</button>
+                 <button id="back-to-levels-btn" class="bg-gray-700/50 text-white font-bold py-2 px-6 rounded-full hover:bg-gray-600/50" data-key="back_to_level_select">&larr; Back to Level Select</button>
+            </div>
+            <!-- Error Message Popup -->
+            <div id="error-popup" class="error-popup hidden absolute bottom-6 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-lg shadow-xl">
+                <p data-key="error_message">Oops! There's an error in your code.</p>
             </div>
         </section>
         
@@ -162,69 +194,136 @@
     <script>
         const translations = {
             en: {
-                title: "CodeQuest",
-                subtitle: "Your Fun Coding Adventure!",
-                description: "Unlock the magic of coding through fun games and interactive challenges. Perfect for all ages and skill levels. Start your quest today!",
-                start_demo: "Start the Demo",
-                demo_title: "Quick Demo: See the Magic!",
-                demo_instructions_title: "Instructions",
-                demo_instructions: "Type the code in the box to the right to change the color of the circle. Try typing `blue`, `green`, or `red`!",
-                run_code: "Run Code",
-                start_levels: "Start the Real Quest!",
-                levels_title: "Choose Your Challenge",
-                level_1_title: "Level 1: Maze Runner",
-                level_1_desc: "Guide the puppy through the maze to its home using directional commands.",
-                level_2_title: "Level 2: Planet Hopper",
-                level_2_desc: "Use arrays and loops to visit a series of planets and collect fuel.",
-                level_3_title: "Level 3: Dragon Defense",
-                level_3_desc: "Use functions with parameters and conditionals to defend your castle from a dragon.",
-                instructions: "Instructions",
-                get_hint: "Get a Hint",
-                back_to_levels: "Back to Levels",
-                congrats: "Congratulations!",
-                level_complete: "You've completed the level!",
-                enter_name_placeholder: "Enter your name for the certificate",
-                download_cert: "Download Certificate",
+                title: "CodeQuest", subtitle: "Your Fun Coding Adventure!", description: "Unlock the magic of coding through fun games and interactive challenges. Perfect for all ages and skill levels. Start your quest today!",
+                start_learning: "Start Your Learning", demo_title: "Quick Demo: See the Magic!", demo_instructions_title: "Instructions", demo_instructions: "Type the code in the box to the right to change the color of the circle. Try typing `blue`, `green`, or `red`!",
+                run_code: "Run Code", start_levels: "Start the Real Quest!", levels_title: "Choose Your Challenge",
+                level_1_title: "Level 1: Maze Runner", level_1_desc: "Guide the puppy through the maze to its home using directional commands.",
+                level_2_title: "Level 2: Planet Hopper", level_2_desc: "Use arrays and loops to visit a series of planets and collect fuel.",
+                level_3_title: "Level 3: Function Forge", level_3_desc: "Forge items by calling functions with parameters and add the returned items to your inventory.",
+                instructions: "Instructions", get_hint: "Get a Hint", back_to_level_select: "&larr; Back to Level Select",
+                congrats: "Congratulations!", level_complete: "You've completed the level!",
+                enter_name_placeholder: "Enter your name for the certificate", download_cert: "Download Certificate",
                 game_1_instructions: "Guide the puppy home! Use `moveRight()`, `moveDown()`, `moveLeft()`, and `moveUp()` to navigate the maze.",
                 game_1_hint: "The path is: Right, Right, Down, Down, Right, Right. Write the commands in order.",
                 game_2_instructions: "Visit all planets to collect fuel. The planet coordinates are in the `planets` array. Use a `for` loop and `flyTo(x, y)`.",
                 game_2_hint: "Loop through the array like this: for (const planet of planets) { flyTo(planet[0], planet[1]); }",
-                game_3_instructions: "A dragon is near! If `dragonIsNear` is true, you must build a wall of size 5 or more. Use `build('wall', size)`.",
-                game_3_hint: "Use an if statement: if (dragonIsNear) { build('wall', 5); } else { build('tower', 2); }",
+                game_3_instructions: "Forge a sword, a shield, and a helmet. Use `forge(item, material)` to create an item, then `inventory.add(item)` to store it. Valid materials are 'iron' and 'steel'.",
+                game_3_hint: "Create each item and add it to the inventory, like this: const mySword = forge('sword', 'iron'); inventory.add(mySword);",
+                error_message: "Oops! There's an error in your code.",
+                inventory_empty: "Inventory is empty"
+            },
+            es: {
+                title: "CodeQuest", subtitle: "¡Tu divertida aventura de codificación!", description: "Desbloquea la magia de la codificación a través de divertidos juegos y desafíos interactivos. Perfecto para todas las edades y niveles de habilidad. ¡Comienza tu búsqueda hoy!",
+                start_learning: "Empieza a Aprender", demo_title: "Demostración rápida: ¡Mira la magia!", demo_instructions_title: "Instrucciones", demo_instructions: "Escribe el código en el cuadro de la derecha para cambiar el color del círculo. ¡Intenta escribir `blue`, `green` o `red`!",
+                run_code: "Ejecutar código", start_levels: "¡Comienza la verdadera búsqueda!", levels_title: "Elige tu desafío",
+                level_1_title: "Nivel 1: Corredor de Laberinto", level_1_desc: "Guía al cachorro a través del laberinto hasta su casa usando comandos direccionales.",
+                level_2_title: "Nivel 2: Saltador de Planetas", level_2_desc: "Usa arrays y bucles para visitar una serie de planetas y recolectar combustible.",
+                level_3_title: "Nivel 3: Forja de Funciones", level_3_desc: "Forja objetos llamando a funciones con parámetros y añade los objetos devueltos a tu inventario.",
+                instructions: "Instrucciones", get_hint: "Obtener una pista", back_to_level_select: "&larr; Volver a la selección de nivel",
+                congrats: "¡Felicidades!", level_complete: "¡Has completado el nivel!",
+                enter_name_placeholder: "Ingresa tu nombre para el certificado", download_cert: "Descargar certificado",
+                game_1_instructions: "¡Guía al cachorro a casa! Usa `moveRight()`, `moveDown()`, `moveLeft()` y `moveUp()` para navegar por el laberinto.",
+                game_1_hint: "El camino es: Derecha, Derecha, Abajo, Abajo, Derecha, Derecha. Escribe los comandos en orden.",
+                game_2_instructions: "Visita todos los planetas para recolectar combustible. Las coordenadas de los planetas están en el array `planets`. Usa un bucle `for` y `flyTo(x, y)`.",
+                game_2_hint: "Recorre el array así: for (const planet of planets) { flyTo(planet[0], planet[1]); }",
+                game_3_instructions: "Forja una espada, un escudo y un casco. Usa `forge(item, material)` para crear un objeto, luego `inventory.add(item)` para guardarlo. Los materiales válidos son 'iron' y 'steel'.",
+                game_3_hint: "Crea cada objeto y añádelo al inventario, así: const miEspada = forge('sword', 'iron'); inventory.add(miEspada);",
+                error_message: "¡Ups! Hay un error en tu código.",
+                inventory_empty: "El inventario está vacío"
+            },
+            fr: {
+                title: "CodeQuest", subtitle: "Votre aventure de codage amusante !", description: "Déverrouillez la magie du codage à travers des jeux amusants et des défis interactifs. Parfait pour tous les âges et tous les niveaux. Commencez votre quête aujourd'hui !",
+                start_learning: "Commencez à Apprendre", demo_title: "Démo rapide : Voyez la magie !", demo_instructions_title: "Instructions", demo_instructions: "Tapez le code dans la case à droite pour changer la couleur du cercle. Essayez de taper `blue`, `green` ou `red` !",
+                run_code: "Exécuter le code", start_levels: "Commencez la vraie quête !", levels_title: "Choisissez votre défi",
+                level_1_title: "Niveau 1 : Le Labyrinthe", level_1_desc: "Guidez le chiot à travers le labyrinthe jusqu'à sa maison à l'aide de commandes directionnelles.",
+                level_2_title: "Niveau 2 : Sauteur de Planètes", level_2_desc: "Utilisez des tableaux et des boucles pour visiter une série de planètes et collecter du carburant.",
+                level_3_title: "Niveau 3 : Forge de Fonctions", level_3_desc: "Forgez des objets en appelant des fonctions avec des paramètres et ajoutez les objets retournés à votre inventaire.",
+                instructions: "Instructions", get_hint: "Obtenir un indice", back_to_level_select: "&larr; Retour à la sélection des niveaux",
+                congrats: "Félicitations !", level_complete: "Vous avez terminé le niveau !",
+                enter_name_placeholder: "Entrez votre nom pour le certificat", download_cert: "Télécharger le certificat",
+                game_1_instructions: "Guidez le chiot à la maison ! Utilisez `moveRight()`, `moveDown()`, `moveLeft()` et `moveUp()` pour naviguer dans le labyrinthe.",
+                game_1_hint: "Le chemin est : Droite, Droite, Bas, Bas, Droite, Droite. Écrivez les commandes dans l'ordre.",
+                game_2_instructions: "Visitez toutes les planètes pour collecter du carburant. Les coordonnées des planètes se trouvent dans le tableau `planets`. Utilisez une boucle `for` et `flyTo(x, y)`.",
+                game_2_hint: "Parcourez le tableau comme ceci : for (const planet of planets) { flyTo(planet[0], planet[1]); }",
+                game_3_instructions: "Forgez une épée, un bouclier et un casque. Utilisez `forge(item, material)` pour créer un objet, puis `inventory.add(item)` pour le stocker. Les matériaux valides sont 'iron' et 'steel'.",
+                game_3_hint: "Créez chaque objet et ajoutez-le à l'inventaire, comme ceci : const monEpee = forge('sword', 'iron'); inventory.add(monEpee);",
+                error_message: "Oups ! Il y a une erreur dans votre code.",
+                inventory_empty: "L'inventaire est vide"
+            },
+            hi: {
+                title: "कोडक्वेस्ट", subtitle: "आपका मजेदार कोडिंग एडवेंचर!", description: "मजेदार खेलों और इंटरैक्टिव चुनौतियों के माध्यम से कोडिंग के जादू को अनलॉक करें। सभी उम्र और कौशल स्तरों के लिए बिल्कुल सही। आज ही अपनी खोज शुरू करें!",
+                start_learning: "सीखना शुरू करें", demo_title: "त्वरित डेमो: जादू देखें!", demo_instructions_title: "निर्देश", demo_instructions: "वृत्त का रंग बदलने के लिए दाईं ओर दिए गए बॉक्स में कोड टाइप करें। `blue`, `green`, या `red` टाइप करने का प्रयास करें!",
+                run_code: "कोड चलाएँ", start_levels: "असली खोज शुरू करें!", levels_title: "अपनी चुनौती चुनें",
+                level_1_title: "स्तर 1: भूलभुलैया धावक", level_1_desc: "दिशात्मक आदेशों का उपयोग करके पिल्ले को भूलभुलैया के माध्यम से उसके घर तक मार्गदर्शन करें।",
+                level_2_title: "स्तर 2: ग्रह हॉपर", level_2_desc: "ग्रहों की एक श्रृंखला पर जाने और ईंधन इकट्ठा करने के लिए एरे और लूप का उपयोग करें।",
+                level_3_title: "स्तर 3: फंक्शन फोर्ज", level_3_desc: "पैरामीटर के साथ फ़ंक्शन कॉल करके आइटम बनाएं और लौटाए गए आइटम को अपनी इन्वेंट्री में जोड़ें।",
+                instructions: "निर्देश", get_hint: "संकेत प्राप्त करें", back_to_level_select: "&larr; स्तर चयन पर वापस",
+                congrats: "बधाई हो!", level_complete: "आपने स्तर पूरा कर लिया है!",
+                enter_name_placeholder: "प्रमाण पत्र के लिए अपना नाम दर्ज करें", download_cert: "प्रमाण पत्र डाउनलोड करें",
+                game_1_instructions: "पिल्ले को घर तक मार्गदर्शन करें! भूलभुलैया में नेविगेट करने के लिए `moveRight()`, `moveDown()`, `moveLeft()`, और `moveUp()` का उपयोग करें।",
+                game_1_hint: "रास्ता है: दाएँ, दाएँ, नीचे, नीचे, दाएँ, दाएँ। आदेशों को क्रम में लिखें।",
+                game_2_instructions: "ईंधन इकट्ठा करने के लिए सभी ग्रहों पर जाएँ। ग्रहों के निर्देशांक `planets` ऐरे में हैं। `for` लूप और `flyTo(x, y)` का उपयोग करें।",
+                game_2_hint: "ऐरे को इस तरह लूप करें: for (const planet of planets) { flyTo(planet[0], planet[1]); }",
+                game_3_instructions: "एक तलवार, एक ढाल और एक हेलमेट बनाएं। एक आइटम बनाने के लिए `forge(item, material)` का उपयोग करें, फिर इसे स्टोर करने के लिए `inventory.add(item)` का उपयोग करें। मान्य सामग्री 'iron' और 'steel' हैं।",
+                game_3_hint: "प्रत्येक आइटम बनाएं और इसे इन्वेंट्री में जोड़ें, इस तरह: const meriTalwar = forge('sword', 'iron'); inventory.add(meriTalwar);",
+                error_message: "ओह! आपके कोड में एक त्रुटि है।",
+                inventory_empty: "इन्वेंट्री खाली है"
             },
             de: {
-                title: "CodeQuest",
-                subtitle: "Dein lustiges Programmier-Abenteuer!",
-                description: "Entfessle die Magie des Programmierens durch lustige Spiele und interaktive Herausforderungen. Perfekt für alle Altersgruppen und Fähigkeitsstufen. Starte noch heute deine Quest!",
-                start_demo: "Demo starten",
-                demo_title: "Schnelldemo: Sieh die Magie!",
-                demo_instructions_title: "Anweisungen",
-                demo_instructions: "Gib den Code in das Feld rechts ein, um die Farbe des Kreises zu ändern. Versuche `blue`, `green` oder `red` einzugeben!",
-                run_code: "Code ausführen",
-                start_levels: "Starte die echte Quest!",
-                levels_title: "Wähle deine Herausforderung",
-                level_1_title: "Level 1: Labyrinthläufer",
-                level_1_desc: "Führe den Welpen mit Richtungsbefehlen durch das Labyrinth nach Hause.",
-                level_2_title: "Level 2: Planetenhüpfer",
-                level_2_desc: "Verwende Arrays und Schleifen, um eine Reihe von Planeten zu besuchen und Treibstoff zu sammeln.",
-                level_3_title: "Level 3: Drachenverteidigung",
-                level_3_desc: "Verwende Funktionen mit Parametern und Bedingungen, um deine Burg vor einem Drachen zu verteidigen.",
-                instructions: "Anweisungen",
-                get_hint: "Hinweis erhalten",
-                back_to_levels: "Zurück zu den Levels",
-                congrats: "Herzlichen Glückwunsch!",
-                level_complete: "Du hast das Level abgeschlossen!",
-                enter_name_placeholder: "Gib deinen Namen für das Zertifikat ein",
-                download_cert: "Zertifikat herunterladen",
+                title: "CodeQuest", subtitle: "Dein lustiges Programmier-Abenteuer!", description: "Entfessle die Magie des Programmierens durch lustige Spiele und interaktive Herausforderungen. Perfekt für alle Altersgruppen und Fähigkeitsstufen. Starte noch heute deine Quest!",
+                start_learning: "Beginne zu Lernen", demo_title: "Schnelldemo: Sieh die Magie!", demo_instructions_title: "Anweisungen", demo_instructions: "Gib den Code in das Feld rechts ein, um die Farbe des Kreises zu ändern. Versuche `blue`, `green` oder `red` einzugeben!",
+                run_code: "Code ausführen", start_levels: "Starte die echte Quest!", levels_title: "Wähle deine Herausforderung",
+                level_1_title: "Level 1: Labyrinthläufer", level_1_desc: "Führe den Welpen mit Richtungsbefehlen durch das Labyrinth nach Hause.",
+                level_2_title: "Level 2: Planetenhüpfer", level_2_desc: "Verwende Arrays und Schleifen, um eine Reihe von Planeten zu besuchen und Treibstoff zu sammeln.",
+                level_3_title: "Level 3: Funktionsschmiede", level_3_desc: "Schmiede Gegenstände, indem du Funktionen mit Parametern aufrufst und die zurückgegebenen Gegenstände deinem Inventar hinzufügst.",
+                instructions: "Anweisungen", get_hint: "Hinweis erhalten", back_to_level_select: "&larr; Zurück zur Levelauswahl",
+                congrats: "Herzlichen Glückwunsch!", level_complete: "Du hast das Level abgeschlossen!",
+                enter_name_placeholder: "Gib deinen Namen für das Zertifikat ein", download_cert: "Zertifikat herunterladen",
                 game_1_instructions: "Führe den Welpen nach Hause! Benutze `moveRight()`, `moveDown()`, `moveLeft()` und `moveUp()`, um durch das Labyrinth zu navigieren.",
                 game_1_hint: "Der Weg ist: Rechts, Rechts, Runter, Runter, Rechts, Rechts. Schreibe die Befehle in der richtigen Reihenfolge.",
                 game_2_instructions: "Besuche alle Planeten, um Treibstoff zu sammeln. Die Planetenkoordinaten befinden sich im `planets`-Array. Benutze eine `for`-Schleife und `flyTo(x, y)`.",
                 game_2_hint: "Durchlaufe das Array so: for (const planet of planets) { flyTo(planet[0], planet[1]); }",
-                game_3_instructions: "Ein Drache ist in der Nähe! Wenn `dragonIsNear` wahr ist, musst du eine Mauer der Größe 5 oder mehr bauen. Benutze `build('wall', size)`.",
-                game_3_hint: "Benutze eine if-Anweisung: if (dragonIsNear) { build('wall', 5); } else { build('tower', 2); }",
+                game_3_instructions: "Schmiede ein Schwert, einen Schild und einen Helm. Benutze `forge(item, material)`, um einen Gegenstand zu erstellen, und dann `inventory.add(item)`, um ihn zu lagern. Gültige Materialien sind 'iron' und 'steel'.",
+                game_3_hint: "Erstelle jeden Gegenstand und füge ihn dem Inventar hinzu, so: const meinSchwert = forge('sword', 'iron'); inventory.add(meinSchwert);",
+                error_message: "Hoppla! Es ist ein Fehler in deinem Code aufgetreten.",
+                inventory_empty: "Inventar ist leer"
             }
         };
 
+        // --- SOUND ENGINE ---
+        let synth;
+        let audioReady = false;
+
+        async function initAudio() {
+            if (audioReady) return;
+            if (window.Tone) {
+                try {
+                    await Tone.start();
+                    synth = new Tone.Synth().toDestination();
+                    audioReady = true;
+                    console.log("Audio ready");
+                } catch (e) {
+                    console.error("Could not start audio", e);
+                }
+            }
+        }
+
+        const playSound = (note, duration = '8n') => {
+            if (!audioReady) return;
+            synth.triggerAttackRelease(note, duration);
+        };
+
+        const playSuccessSound = () => {
+            if (!audioReady) return;
+            const now = Tone.now();
+            synth.triggerAttackRelease("C4", "8n", now);
+            synth.triggerAttackRelease("E4", "8n", now + 0.2);
+            synth.triggerAttackRelease("G4", "8n", now + 0.4);
+        };
+
+        const playErrorSound = () => playSound("C3", "4n");
+
+        // --- UI & LANGUAGE ---
         const languageSelector = document.getElementById('language-selector');
         const allTextElements = document.querySelectorAll('[data-key]');
 
@@ -232,7 +331,7 @@
             allTextElements.forEach(element => {
                 const key = element.getAttribute('data-key');
                 if (translations[lang] && translations[lang][key]) {
-                    element.innerText = translations[lang][key];
+                    element.innerHTML = translations[lang][key];
                 }
             });
             const nameInput = document.getElementById('name-input');
@@ -244,6 +343,7 @@
         languageSelector.addEventListener('change', (e) => changeLanguage(e.target.value));
         changeLanguage('en');
 
+        // --- PAGE NAVIGATION ---
         const landingPage = document.getElementById('landing-page');
         const demoSection = document.getElementById('demo-section');
         const levelSelection = document.getElementById('level-selection');
@@ -264,6 +364,7 @@
         startLevelsBtn.addEventListener('click', () => showSection(levelSelection));
         backToLevelsBtn.addEventListener('click', () => showSection(levelSelection));
 
+        // --- DEMO LOGIC ---
         const demoCodeInput = document.getElementById('demo-code-input');
         const runDemoCodeBtn = document.getElementById('run-demo-code-btn');
         const demoOutputCircle = document.getElementById('demo-output-circle');
@@ -273,7 +374,7 @@
             demoOutputCircle.style.backgroundColor = ['red', 'green', 'blue'].includes(code) ? code : 'yellow';
         });
         
-        // Game Logic
+        // --- GAME LOGIC ---
         const gameTitle = document.getElementById('game-title');
         const gameInstructions = document.getElementById('game-instructions');
         const codeInput = document.getElementById('code-input');
@@ -281,32 +382,33 @@
         const hintBtn = document.getElementById('hint-btn');
         const hintBox = document.getElementById('hint-box');
         const hintText = document.getElementById('hint-text');
+        const errorPopup = document.getElementById('error-popup');
         
         const puppy = document.getElementById('puppy');
         const home = document.getElementById('home');
         const mazeContainer = document.getElementById('maze-container');
         const spaceship = document.getElementById('spaceship');
         const planetsContainer = document.getElementById('planets-container');
-        const castleGround = document.getElementById('castle-ground');
-        const castleContainer = document.getElementById('castle-container');
-        const dragon = document.getElementById('dragon');
+        const forgeArea = document.getElementById('forge-area');
+        const inventory = document.getElementById('inventory');
 
         let currentLevel = 1;
         const GRID_SIZE = 5;
         let puppyPos = { x: 0, y: 0 };
         let planetsToVisit = [];
         let visitedPlanets = 0;
-        let wallSize = 0;
+        let inventoryItems = new Set();
 
         function hideAllGameElements() {
-            [puppy, home, mazeContainer, spaceship, planetsContainer, castleGround, castleContainer, dragon].forEach(el => el.classList.add('hidden'));
-            [mazeContainer, planetsContainer, castleContainer].forEach(c => c.innerHTML = '');
+            [puppy, home, mazeContainer, spaceship, planetsContainer, forgeArea].forEach(el => el.classList.add('hidden'));
+            [mazeContainer, planetsContainer].forEach(c => c.innerHTML = '');
         }
 
         function setupLevel(level) {
             currentLevel = level;
             showSection(gameSection);
             hintBox.classList.add('hidden');
+            errorPopup.classList.add('hidden');
             hideAllGameElements();
             const lang = languageSelector.value;
             codeInput.value = '';
@@ -324,9 +426,10 @@
                 [spaceship, planetsContainer].forEach(el => el.classList.remove('hidden'));
                 resetLevel2();
             } else if (level === 3) {
-                gameTitle.innerText = translations[lang].level_3_instructions;
+                gameTitle.innerText = translations[lang].level_3_title;
+                gameInstructions.innerText = translations[lang].game_3_instructions;
                 hintText.innerText = translations[lang].game_3_hint;
-                [castleGround, castleContainer, dragon].forEach(el => el.classList.remove('hidden'));
+                [forgeArea].forEach(el => el.classList.remove('hidden'));
                 resetLevel3();
             }
         }
@@ -334,22 +437,13 @@
         function resetLevel1() {
             puppyPos = { x: 0, y: 0 };
             const mazeLayout = [
-                [0, 0, 1, 0, 0],
-                [1, 0, 1, 0, 1],
-                [1, 0, 0, 0, 1],
-                [1, 1, 1, 0, 1],
-                [0, 0, 0, 0, 0],
+                [0, 0, 1, 0, 0], [1, 0, 1, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 0, 1], [0, 0, 0, 0, 0],
             ];
             mazeContainer.innerHTML = '';
-            mazeContainer.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
             for(let y = 0; y < GRID_SIZE; y++) {
                 for(let x = 0; x < GRID_SIZE; x++) {
                     const cell = document.createElement('div');
-                    cell.style.width = `${100/GRID_SIZE}%`;
-                    cell.style.height = `${100/GRID_SIZE}%`;
-                    cell.style.position = 'absolute';
-                    cell.style.left = `${x * (100/GRID_SIZE)}%`;
-                    cell.style.top = `${y * (100/GRID_SIZE)}%`;
+                    cell.style.cssText = `width:${100/GRID_SIZE}%; height:${100/GRID_SIZE}%; position:absolute; left:${x*(100/GRID_SIZE)}%; top:${y*(100/GRID_SIZE)}%;`;
                     if (mazeLayout[y][x] === 1) {
                         cell.style.backgroundColor = 'rgba(0,0,50,0.5)';
                         cell.classList.add('wall');
@@ -357,6 +451,11 @@
                     mazeContainer.appendChild(cell);
                 }
             }
+            const elementSize = `${100 / GRID_SIZE}%`;
+            [puppy, home].forEach(el => {
+                el.style.width = elementSize;
+                el.style.height = elementSize;
+            });
             puppy.style.left = `${puppyPos.x * (100/GRID_SIZE)}%`;
             puppy.style.top = `${puppyPos.y * (100/GRID_SIZE)}%`;
             home.style.left = `${(GRID_SIZE - 1) * (100/GRID_SIZE)}%`;
@@ -380,9 +479,9 @@
         }
 
         function resetLevel3() {
-            wallSize = 0;
-            castleContainer.innerHTML = '';
-            dragon.style.right = '-50%';
+            inventoryItems.clear();
+            const lang = languageSelector.value;
+            inventory.innerHTML = `<p class="text-gray-400" data-key="inventory_empty">${translations[lang].inventory_empty}</p>`;
         }
         
         levelCards.forEach(card => card.addEventListener('click', () => setupLevel(parseInt(card.dataset.level))));
@@ -391,30 +490,40 @@
         runCodeBtn.addEventListener('click', () => executeCode(codeInput.value));
 
         async function executeCode(code) {
+            await initAudio(); // Initialize audio on first run
+            runCodeBtn.disabled = true;
+            errorPopup.classList.add('hidden');
+            
+            // Level 1 functions
             const moveRight = async () => await movePuppy(1, 0);
             const moveLeft = async () => await movePuppy(-1, 0);
             const moveDown = async () => await movePuppy(0, 1);
             const moveUp = async () => await movePuppy(0, -1);
             
+            // Level 2 functions
             const planets = planetsToVisit;
             const flyTo = async (x, y) => await flySpaceship(x, y);
 
-            const dragonIsNear = Math.random() > 0.5;
-            if(dragonIsNear) dragon.style.right = '10%';
-            const build = (part, size) => buildCastlePart(part, size);
+            // Level 3 functions
+            const forge = (item, material) => forgeItem(item, material);
+            const inventoryAPI = { add: (item) => addToInventory(item) };
+
 
             if (currentLevel === 1) resetLevel1();
             if (currentLevel === 2) resetLevel2();
             if (currentLevel === 3) resetLevel3();
 
             try {
-                const asyncFunction = new Function('moveRight', 'moveLeft', 'moveDown', 'moveUp', 'planets', 'flyTo', 'dragonIsNear', 'build', `return (async () => { ${code} })()`);
-                await asyncFunction(moveRight, moveLeft, moveDown, moveUp, planets, flyTo, dragonIsNear, build);
-            } catch (e) {
-                console.error("Execution error:", e);
-                alert("Oops! There's an error in your code. Check the console for details.");
-            } finally {
+                const asyncFunction = new Function('moveRight', 'moveLeft', 'moveDown', 'moveUp', 'planets', 'flyTo', 'forge', 'inventory', `return (async () => { ${code} })()`);
+                await asyncFunction(moveRight, moveLeft, moveDown, moveUp, planets, flyTo, forge, inventoryAPI);
                 checkWinCondition();
+            } catch (e) {
+                playErrorSound();
+                console.error("Execution error:", e);
+                errorPopup.classList.remove('hidden');
+                setTimeout(() => errorPopup.classList.add('hidden'), 3000);
+            } finally {
+                runCodeBtn.disabled = false;
             }
         }
         
@@ -422,13 +531,21 @@
             return new Promise(resolve => {
                 const newX = puppyPos.x + dx;
                 const newY = puppyPos.y + dy;
-                // Basic boundary and wall check
+                let moved = false;
                 if (newX >= 0 && newX < GRID_SIZE && newY >= 0 && newY < GRID_SIZE) {
                      const targetCell = mazeContainer.children[newY * GRID_SIZE + newX];
                      if(!targetCell.classList.contains('wall')) {
                         puppyPos.x = newX;
                         puppyPos.y = newY;
+                        moved = true;
                      }
+                }
+                if (moved) {
+                    playSound("C4");
+                    puppy.classList.add('puppy-hop');
+                    setTimeout(() => puppy.classList.remove('puppy-hop'), 400);
+                } else {
+                    playErrorSound();
                 }
                 puppy.style.left = `${puppyPos.x * (100/GRID_SIZE)}%`;
                 puppy.style.top = `${puppyPos.y * (100/GRID_SIZE)}%`;
@@ -437,6 +554,7 @@
         }
 
         async function flySpaceship(x, y) {
+            playSound("A2", "1s");
             spaceship.style.left = `calc(${x}% - 24px)`;
             spaceship.style.top = `calc(${y}% - 24px)`;
             await new Promise(r => setTimeout(r, 1000));
@@ -447,35 +565,73 @@
                 if (Math.abs(px - x) < 5 && Math.abs(py - y) < 5 && !planet.classList.contains('visited')) {
                     planet.classList.add('visited');
                     visitedPlanets++;
+                    playSound("G4");
                 }
             });
         }
 
-        function buildCastlePart(part, size = 1) {
-            const element = document.createElement('div');
-            element.className = 'inline-block mx-1 text-center';
-            const icon = part === 'tower' ? '♖' : '🧱';
-            element.innerHTML = Array(size).fill(icon).join('<br>');
-            element.style.fontSize = '3rem';
-            element.style.lineHeight = '1';
-            castleContainer.appendChild(element);
-            if(part === 'wall') wallSize += size;
+        function forgeItem(item, material) {
+            playSound("E3");
+            const validItems = {
+                sword: { iron: '⚔️', steel: '🗡️' },
+                shield: { iron: '🛡️', steel: '�️' },
+                helmet: { iron: '🪖', steel: '🪖' }
+            };
+            if (validItems[item] && validItems[item][material]) {
+                return validItems[item][material];
+            }
+            return null; // Return null if invalid
+        }
+
+        function addToInventory(itemEmoji) {
+            if (!itemEmoji) return; // Do nothing if item is null
+            if (inventoryItems.size === 0) {
+                inventory.innerHTML = ''; // Clear "empty" message
+            }
+            inventoryItems.add(itemEmoji);
+            
+            // Re-render inventory to avoid duplicates
+            inventory.innerHTML = '';
+            inventoryItems.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'text-5xl item-appear';
+                itemEl.innerText = item;
+                inventory.appendChild(itemEl);
+            });
         }
         
         function checkWinCondition() {
-            if (currentLevel === 1 && puppyPos.x === GRID_SIZE - 1 && puppyPos.y === GRID_SIZE - 1) showCertificate(1);
-            if (currentLevel === 2 && visitedPlanets === planetsToVisit.length) showCertificate(2);
+            let won = false;
+            if (currentLevel === 1 && puppyPos.x === GRID_SIZE - 1 && puppyPos.y === GRID_SIZE - 1) won = true;
+            if (currentLevel === 2 && visitedPlanets === planetsToVisit.length) won = true;
             if (currentLevel === 3) {
-                 const dragonIsNear = dragon.style.right === '10%';
-                 if (dragonIsNear && wallSize >= 5) {
-                     showCertificate(3);
-                 } else if (!dragonIsNear && castleContainer.children.length > 0) {
-                     showCertificate(3);
-                 }
+                if (inventoryItems.has('⚔️') || inventoryItems.has('🗡️')) {
+                    if (inventoryItems.has('🛡️') && inventoryItems.has('🪖')) {
+                        won = true;
+                    }
+                }
+            }
+            if (won) {
+                triggerConfetti();
+                playSuccessSound();
+                setTimeout(() => showCertificate(currentLevel), 2000);
+            }
+        }
+
+        // --- EFFECTS ---
+        function triggerConfetti() {
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.animationDelay = `${Math.random() * 2}s`;
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3000);
             }
         }
         
-        // Certificate Logic
+        // --- CERTIFICATE LOGIC ---
         const nameInput = document.getElementById('name-input');
         const userName = document.getElementById('user-name');
         const downloadCertBtn = document.getElementById('download-cert-btn');
